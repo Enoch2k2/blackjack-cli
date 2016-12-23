@@ -27,7 +27,6 @@ class Game
   end
 
   def turn
-    binding.pry
     puts "We're now in the turn phase!"
   end
 
