@@ -171,7 +171,7 @@ class Game
   end
 
   def options
-    puts "#{current_player.name} turn: Type hit to draw a card or help for more options!"
+    puts "#{current_player.name} turn: Type hit to draw a card, stand to keep your hand, or help for more options!"
     input = gets.strip
     puts ""
     case input
