@@ -1,7 +1,8 @@
 class Player
-  attr_accessor :deck
+  attr_accessor :deck, :name
 
-  def initialize
+  def initialize(name="AI")
     @deck = []
+    @name = name
   end
 end
