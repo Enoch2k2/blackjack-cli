@@ -41,6 +41,7 @@ class Cli
   def initialize_players
     puts "Type 1 for 1 player, 2 for 2 players, or exit to exit:"
     input = gets.strip
+    puts ""
     case input
       when "1"
         ask_for_player1_name
@@ -48,7 +49,9 @@ class Cli
         initialize_game
       when "2"
         ask_for_player1_name
+        puts ""
         ask_for_player2_name
+        puts ""
         initialize_game
       when "exit"
         return
