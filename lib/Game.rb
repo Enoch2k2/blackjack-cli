@@ -146,7 +146,7 @@ class Game
 
   def view_cards(player)
     puts "#{player.name}'s cards:"
-    player.deck.each{|card| puts "#{card.name} - #{card.type}"}
+    player.deck.each{|card| puts "#{card.name} of #{card.type}"}
     puts ""
   end
 
