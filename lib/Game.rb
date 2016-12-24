@@ -154,7 +154,7 @@ class Game
   def turn
     @turn_count += 1 if current_player.status == "stand"
     view_cards(current_player) if current_player.is_a?(Human)
-    get_player_card_values(current_player)
+    get_player_card_values(current_player) unless @turn_count == 0 || @turn_count == 1
     puts "A total value of #{current_player.deck_value}" if current_player.is_a?(Human)
     puts ""
     options
