@@ -48,7 +48,8 @@ class Game
       when "Ace"
         view_cards(player)
         puts "Would you like the Ace of #{card.type} to equal 1 or 11? Type 1 or 11"
-        input = gets.strip
+        input = gets.strip if player.is_a?(Human)
+        input = player.get_ace_value if player.is_a?(Computer)
         case input
           when "1"
             return 1
@@ -172,7 +173,8 @@ class Game
 
   def options
     puts "#{current_player.name} turn: Type hit to draw a card, stand to keep your hand, or help for more options!"
-    input = gets.strip
+    input = gets.strip if current_player.is_a?(Human)
+    input = current_player.move if current_player.is_a?(Computer)
     puts ""
     case input
       when "hit"
