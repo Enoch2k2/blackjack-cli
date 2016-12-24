@@ -1,4 +1,3 @@
-require 'pry'
 class Game
   attr_accessor :deck, :player_1, :player_2, :turn_count
 
