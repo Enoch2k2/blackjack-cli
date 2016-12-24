@@ -2,10 +2,11 @@ require 'pry'
 class Game
   attr_accessor :deck, :player_1, :player_2, :turn_count
 
-  def initialize(player_1, player_2)
+  def initialize(player_1, player_2, type)
     @deck = Deck.new.cards
     @player_1 = player_1
     @player_2 = player_2
+    @type = type
     @turn_count = 0
   end
 
@@ -153,9 +154,9 @@ class Game
 
   def turn
     @turn_count += 1 if current_player.status == "stand"
-    view_cards(current_player)
+    view_cards(current_player) if current_player.is_a?(Human)
     get_player_card_values(current_player)
-    puts "A total value of #{current_player.deck_value}"
+    puts "A total value of #{current_player.deck_value}" if current_player.is_a?(Human)
     puts ""
     options
   end
@@ -172,12 +173,14 @@ class Game
   end
 
   def options
-    puts "#{current_player.name} turn: Type hit to draw a card, stand to keep your hand, or help for more options!"
+    puts "#{current_player.name} turn: Type hit to draw a card, stand to keep your hand, or help for more options!" if current_player.is_a?(Human)
     input = gets.strip if current_player.is_a?(Human)
     input = current_player.move if current_player.is_a?(Computer)
     puts ""
     case input
       when "hit"
+        puts "#{current_player.name} draws a card!"
+        puts ""
         hit(current_player)
       when "help"
         help
@@ -235,15 +238,28 @@ class Game
   end
 
   def end_game
-    puts "Play again? y/n"
+    puts "Main Menu? Type 'menu', Play again? Type 'y' for yes or 'n' for no:"
     input = gets.strip
 
     case input
-      when "y"
+      when "menu"
+        puts ""
         Cli.new.initialize_players
+      when "y"
+        puts ""
+        if @type == "1 player"
+          @player_1 = Human.new(@player_1.name)
+          @player_2 = Computer.new
+          Game.new(@player_1, @player_2, "1 player").play
+        else
+          @player_1 = Human.new(@player_1.name)
+          @player_2 = Human.new(@player_2.name)
+          Game.new(@player_1, @player_2, "2 player").play
+        end
       when "n"
         return
       else
+        puts ""
         Cli.new.error_message
         end_game
     end

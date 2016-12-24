@@ -17,7 +17,7 @@ class Cli
         sleep(2)
         puts "Game loaded"
         sleep(1)
-        Game.new(@player_1, @player_2).play
+        Game.new(@player_1, @player_2, @type).play
       when "exit"
         return
       else
@@ -30,12 +30,14 @@ class Cli
     puts "Player 1, What is your name?"
     input = gets.strip
     @player_1 = Human.new(input)
+    @type = "1 player"
   end
 
   def ask_for_player2_name
     puts "Player 2, What is your name?"
     input = gets.strip
     @player_2 = Human.new(input)
+    @type = "2 player"
   end
 
   def initialize_players
