@@ -13,7 +13,7 @@ class Deck
       Card.new('Ace', 'Spades'),
       Card.new('2', 'Hearts'),
       Card.new('2', 'Diamonds'),
-      Card.new('2', 'Clubss'),
+      Card.new('2', 'Clubs'),
       Card.new('2', 'Spades'),
       Card.new('3', 'Hearts'),
       Card.new('3', 'Diamonds'),
