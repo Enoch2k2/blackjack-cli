@@ -92,8 +92,15 @@ class Game
   end
 
   def draw?
-    @player_1.deck_value == @dealer.deck_value if !@player_2
-    @player_1.deck_value == @player_2.deck_value && @player_1.deck_value == @dealer.deck_value
+    if @player_1.deck_value == @dealer.deck_value
+      true
+    elsif @player_2 && @player_1.deck_value > @player_2.deck_value && @player_1.deck_value == @dealer.deck_value
+      true
+    elsif @player_2 && @player_1.deck_value > @dealer.deck_value && @player_1.deck_value == @player_2.deck_value
+      true
+    elsif @player_2 && @player_2.deck_value > @player_1.deck_value && @player_2.deck_value == @dealer.deck_value
+      true
+    end
   end
 
   def bust(player)
