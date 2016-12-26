@@ -164,19 +164,6 @@ class Game
     end
   end
 
-  def lost
-    if bust(@player_1)
-      puts "Player 1 busted!"
-      true
-    elsif @player2 && bust(@player_2)
-      puts "Player 2 busted!"
-      true
-    elsif bust(@dealer)
-      puts "Dealer busted!"
-      true
-    end
-  end
-
   def game_over
     return true if @turn_count == 3 if @player_2
     return true if @turn_count == 2 if !@player_2
@@ -190,7 +177,7 @@ class Game
     puts ""
     view_cards(@player_2) if @player_2
     puts "Total card value: #{@player_2.deck_value}#{bust(@player_2) ? ' - Busted!' : nil}" if @player_2
-    puts ""
+    puts "" if @player_2
     view_cards(@dealer)
     puts "Total card value: #{@dealer.deck_value}#{bust(@dealer) ? ' - Busted!' : nil}"
     sleep(1)
@@ -214,7 +201,6 @@ class Game
 
   def turn
     clear_screen
-    lost ? @turn_count += 1 : nil
     view_cards(current_player) if current_player.is_a?(Human)
     start_of_turn_values(current_player)
     puts "A total value of #{current_player.deck_value}" if current_player.is_a?(Human)
@@ -251,6 +237,12 @@ class Game
         puts "#{current_player.name} draws a card!"
         sleep(2)
         hit(current_player)
+        get_card_values(current_player)
+        if bust(current_player)
+          puts current_player.name + " busts!"
+          @turn_count += 1          
+          sleep(1)
+        end
       when "help"
         clear_screen
         help
