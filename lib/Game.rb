@@ -1,21 +1,28 @@
 class Game
-  attr_accessor :deck, :player_1, :player_2, :turn_count
+  attr_accessor :deck, :player_1, :player_2, :dealer, :turn_count, :type
 
-  def initialize(player_1, player_2, type)
+  def initialize(player_1, player_2=nil, dealer, type)
     @deck = Deck.new.cards
     @player_1 = player_1
-    @player_2 = player_2
+    @player_2 = player_2 if player_2
+    @dealer = dealer
     @type = type
     @turn_count = 0
   end
 
   def current_player
-    @turn_count % 2 == 0 ? @player_1 : @player_2
+    if @turn_count == 0
+      @player_1
+    elsif @turn_count == 1 && @player_2
+      @player_2
+    else
+      @dealer
+    end
   end
 
-  def opposite_player
-    current_player == @player_1 ? @player_2 : @player_1
-  end
+  # def opposite_player
+  #   current_player == @player_1 ? @player_2 : @player_1
+  # end
 
   def card_value(card, player=current_player)
     case card.name
@@ -76,7 +83,6 @@ class Game
     player.deck.push(@deck[0])
     get_player_card_values(player)
     @deck.shift
-    @turn_count += 1
   end
 
   def get_player_card_values(player)
@@ -86,22 +92,49 @@ class Game
   end
 
   def draw?
-    @player_1.deck_value == @player_2.deck_value
+    @player_1.deck_value == @dealer.deck_value if !@player_2
+    @player_1.deck_value == @player_2.deck_value && @player_1.deck_value == @dealer.deck_value
   end
 
   def bust(player)
     player.deck_value > 21
   end
 
+  def two_player_won(player, player_2, player_3)
+    if player.deck_value > player_2.deck_value && bust(player_3) && !bust(player) && !bust(player_2)
+      player
+    elsif player.deck_value > player_3.deck_value && bust(player_2) && !bust(player) && !bust(player_3)
+      player
+    elsif player.deck_value > player_2.deck_value && player.deck_value > player_3.deck_value && !bust(player) && !bust(player_2) && !bust(player_3)
+      player
+    elsif !bust(player) && bust(player_2) && bust(player_3)
+      player
+    end
+  end
+
+  def one_player_won(player_1, player_2)
+    if player_1.deck_value > player_2.deck_value && !bust(player_1) && !bust(player_2)
+      player_1
+    elsif !bust(player_1) && bust(player_2)
+      player_1
+    end
+  end
+
   def won?
-    if @player_1.deck_value > @player_2.deck_value && !bust(@player_1)
-      @player_1
-    elsif @player_2.deck_value > @player_1.deck_value && !bust(@player_2)
-      @player_2
-    elsif bust(@player_1) && !bust(@player_2)
-      @player_2
-    elsif bust(@player_2) && !bust(@player_1)
-      @player_1
+    if @type == "2 player"
+      if winner = two_player_won(@player_1, @player_2, @dealer)
+        winner
+      elsif winner = two_player_won(@player_2, @player_1, @dealer)
+        winner
+      elsif winner = two_player_won(@dealer, @player_1, @player_2)
+        winner
+      end
+    else
+      if winner = one_player_won(@player_1, @dealer)
+        winner
+      elsif winner = one_player_won(@dealer, @player_1)
+        winner
+      end
     end
   end
 
@@ -114,17 +147,15 @@ class Game
   def lost
     if bust(@player_1)
       puts "Player 1 busted!"
-    elsif bust(@player_2)
+    elsif @player2 && bust(@player_2)
       puts "Player 2 busted!"
+    elsif bust(@dealer)
+      puts "Dealer busted!"
     end
   end
 
   def game_over
-    if @player_1.status == "stand" && @player_2.status == "stand"
-      true
-    elsif bust(@player_1) || bust(@player_2)
-      true
-    end
+    @turn_count == 3 ? true : false
   end
 
   def show_hands
@@ -132,8 +163,13 @@ class Game
     puts "Total card value: #{@player_1.deck_value}#{bust(@player_1) ? ' - Busted!' : nil}"
     sleep(1)
     puts ""
-    view_cards(@player_2)
-    puts "Total card value: #{@player_2.deck_value}#{bust(@player_2) ? ' - Busted!' : nil}"
+    view_cards(@player_2) if @player_2
+    puts "Total card value: #{@player_2.deck_value}#{bust(@player_2) ? ' - Busted!' : nil}" if @player_2
+    puts ""
+    view_cards(@dealer)
+    puts "Total card value: #{@dealer.deck_value}#{bust(@dealer) ? ' - Busted!' : nil}"
+    sleep(1)
+    puts ""
   end
 
   def stand(player)
@@ -152,11 +188,11 @@ class Game
   end
 
   def turn
-    @turn_count += 1 if current_player.status == "stand"
+    lost ? turn_count += 1 : nil
     view_cards(current_player) if current_player.is_a?(Human)
-    get_player_card_values(current_player) unless @turn_count == 0 || @turn_count == 1
+    get_player_card_values(current_player)
     puts "A total value of #{current_player.deck_value}" if current_player.is_a?(Human)
-    puts ""
+    puts "" if current_player.is_a?(Human)
     options
   end
 
@@ -165,9 +201,13 @@ class Game
     sleep(1)
     get_player_card_values(@player_1)
     sleep(1)
-    puts "Updating #{@player_2.name}'s hand..."
+    puts "Updating #{@player_2.name}'s hand..." if @player_2
+    sleep(1) if @player_2
+    get_player_card_values(@player_2) if @player_2
+    sleep(1) if @player_2
+    puts "Updating Dealer's hand..."
     sleep(1)
-    get_player_card_values(@player_2)
+    get_player_card_values(@dealer)
     sleep(1)
   end
 
@@ -210,7 +250,8 @@ class Game
     sleep(1)
     puts "Dealing Cards..."
     deal_cards(@player_1)
-    deal_cards(@player_2)
+    deal_cards(@player_2) if @player_2
+    deal_cards(@dealer)
     sleep(1)
     update_player_values
     puts ""
@@ -248,12 +289,13 @@ class Game
         puts ""
         if @type == "1 player"
           @player_1 = Human.new(@player_1.name)
-          @player_2 = Computer.new
-          Game.new(@player_1, @player_2, "1 player").play
+          @dealer = Computer.new
+          Game.new(@player_1, @dealer, "1 player").play
         else
           @player_1 = Human.new(@player_1.name)
           @player_2 = Human.new(@player_2.name)
-          Game.new(@player_1, @player_2, "2 player").play
+          @dealer = Computer.new
+          Game.new(@player_1, @player_2, @dealer, "2 player").play
         end
       when "n"
         return

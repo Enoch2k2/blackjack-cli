@@ -15,9 +15,11 @@ class Cli
       when "start"
         puts "Loading Game..."
         sleep(2)
+        game = Game.new(@player_1, @player_2, @dealer, @type) if @player_2
+        game = Game.new(@player_1, @dealer, @type) if !@player_2
         puts "Game loaded"
         sleep(1)
-        Game.new(@player_1, @player_2, @type).play
+        game.play
       when "exit"
         return
       else
@@ -47,13 +49,14 @@ class Cli
     case input
       when "1"
         ask_for_player1_name
-        @player_2 = Computer.new
+        @dealer = Computer.new
         initialize_game
       when "2"
         ask_for_player1_name
         puts ""
         ask_for_player2_name
         puts ""
+        @dealer = Computer.new
         initialize_game
       when "exit"
         return
