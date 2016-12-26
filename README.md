@@ -27,3 +27,6 @@ Smarter AI
 Feel free to log issues or request features!
 
 Thank you for playing!
+
+
+[![Gem Version](https://badge.fury.io/rb/blackjack-cli.svg)](https://badge.fury.io/rb/blackjack-cli)
