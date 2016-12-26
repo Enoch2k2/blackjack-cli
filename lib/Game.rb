@@ -24,52 +24,61 @@ class Game
   #   current_player == @player_1 ? @player_2 : @player_1
   # end
 
-  def card_value(card, player=current_player)
-    case card.name
-      when "1"
-        return 1
-      when "2"
-        return 2
-      when "3"
-        return 3
-      when "4"
-        return 4
-      when "5"
-        return 5
-      when "6"
-        return 6
-      when "7"
-        return 7
-      when "8"
-        return 8
-      when "9"
-        return 9
-      when "10"
-        return 10
-      when "Jack"
-        return 10
-      when "Queen"
-        return 10
-      when "King"
-        return 10
-      when "Ace"
-        view_cards(player) if player.is_a?(Human)
-        puts "Would you like the Ace of #{card.type} to equal 1 or 11? Type 1 or 11" if player.is_a?(Human)
-        input = gets.strip if player.is_a?(Human)
-        input = player.get_ace_value if player.is_a?(Computer)
-        case input
-          when "1"
-            return 1
-          when "11"
-            return 11
-          else
-            Cli.new.error_message
-            card_value(card)
-        end
-      else
-        Cli.new.error_message
-        card_value(card)
+  def check_for_ace(card, player)
+    if card.name == "Ace" && card.value && player.is_a?(Human)
+      view_cards(player)
+      puts ""
+      puts "Total value of #{player.deck_value}"
+      puts ""
+      puts "You have an Ace in your hand. Would you like to change it's value? Current value #{card.value} : y/n"
+      input = gets.strip
+      case input
+        when 'y'
+          puts "Would you like it's value to be 1 or 11?"
+          input = gets.strip
+          case input
+            when '1'
+              card.value = 1
+            when '11'
+              card.value = 11
+            else
+              Cli.new.error_message
+              check_for_ace(card)
+          end
+        when 'n'
+          card.value
+        else
+          Cli.new.error_message
+          check_for_ace(card, player)
+      end
+    elsif card.name == "Ace" && player.is_a?(Human)
+      clear_screen
+      view_cards(player)
+      puts "You have an Ace in your hand. Would you like it's value to be 1 or 11?"
+      input = gets.strip
+      case input
+        when '1'
+          card.value = 1
+        when '11'
+          card.value = 11
+        else
+          Cli.new.error_message
+          check_for_ace(card)
+      end
+    elsif card.name == "Ace" && player.is_a?(Computer)
+      card.value = player.get_ace_value
     end
+  end
+
+  def start_of_turn_values(player)
+    player.deck_value = 0
+    player.deck.each{|card| player.deck_value += card.value}
+  end
+
+  def get_card_values(player)
+    player.deck_value = 0
+    player.deck.each{|card| check_for_ace(card, player)}
+    player.deck.each{|card| player.deck_value += card.value}
   end
 
   def deal_cards(player)
@@ -81,13 +90,17 @@ class Game
 
   def hit(player)
     player.deck.push(@deck[0])
-    get_player_card_values(player)
+    get_card_values(player)
     @deck.shift
+  end
+
+  def clear_screen
+    Cli.new.clear_screen
   end
 
   def get_player_card_values(player)
     player.deck_value = 0
-    player.deck.each{|card| player.deck_value += card_value(card, player)}
+    player.deck.each{|card| player.deck_value += card.value}
     player.deck_value
   end
 
@@ -154,15 +167,20 @@ class Game
   def lost
     if bust(@player_1)
       puts "Player 1 busted!"
+      true
     elsif @player2 && bust(@player_2)
       puts "Player 2 busted!"
+      true
     elsif bust(@dealer)
       puts "Dealer busted!"
+      true
     end
   end
 
   def game_over
-    @turn_count == 3 ? true : false
+    return true if @turn_count == 3 if @player_2
+    return true if @turn_count == 2 if !@player_2
+
   end
 
   def show_hands
@@ -195,9 +213,10 @@ class Game
   end
 
   def turn
-    lost ? turn_count += 1 : nil
+    clear_screen
+    lost ? @turn_count += 1 : nil
     view_cards(current_player) if current_player.is_a?(Human)
-    get_player_card_values(current_player)
+    start_of_turn_values(current_player)
     puts "A total value of #{current_player.deck_value}" if current_player.is_a?(Human)
     puts "" if current_player.is_a?(Human)
     options
@@ -206,15 +225,19 @@ class Game
   def update_player_values
     puts "Updating #{@player_1.name}'s hand..."
     sleep(1)
-    get_player_card_values(@player_1)
+    clear_screen
+    get_card_values(@player_1)
     sleep(1)
+    clear_screen if @player_1.deck.detect {|x| x if x.name == "Ace"}
     puts "Updating #{@player_2.name}'s hand..." if @player_2
     sleep(1) if @player_2
-    get_player_card_values(@player_2) if @player_2
+    clear_screen if @player_2
+    get_card_values(@player_2) if @player_2
     sleep(1) if @player_2
+    clear_screen if @player_2 && @player_2.deck.detect {|x| x if x.name == "Ace"}
     puts "Updating Dealer's hand..."
     sleep(1)
-    get_player_card_values(@dealer)
+    get_card_values(@dealer)
     sleep(1)
   end
 
@@ -226,15 +249,17 @@ class Game
     case input
       when "hit"
         puts "#{current_player.name} draws a card!"
-        puts ""
+        sleep(2)
         hit(current_player)
       when "help"
+        clear_screen
         help
         options
       when "cards"
+        clear_screen
         view_cards(current_player)
         puts "A total value of #{current_player.deck_value}"
-        puts ""
+        get_card_values(current_player)
         options
       when "exit"
         exit
@@ -242,7 +267,7 @@ class Game
         Cli.new.initialize_players
       when "stand"
         puts "#{current_player.name} stands!"
-        puts ""
+        sleep(2)
         stand(current_player)
         @turn_count += 1
       else
@@ -255,16 +280,18 @@ class Game
     puts "Shuffling Deck..."
     @deck.shuffle!
     sleep(1)
+    clear_screen
     puts "Dealing Cards..."
     deal_cards(@player_1)
     deal_cards(@player_2) if @player_2
     deal_cards(@dealer)
     sleep(1)
+    clear_screen
     update_player_values
-    puts ""
     until game_over
       turn
     end
+    clear_screen
     puts "Players, show your hands!"
     puts ""
     sleep(1)
@@ -290,10 +317,10 @@ class Game
 
     case input
       when "menu"
-        puts ""
+        clear_screen
         Cli.new.initialize_players
       when "y"
-        puts ""
+        clear_screen
         if @type == "1 player"
           @player_1 = Human.new(@player_1.name)
           @dealer = Computer.new
@@ -307,7 +334,7 @@ class Game
       when "n"
         return
       else
-        puts ""
+        clear_screen
         Cli.new.error_message
         end_game
     end

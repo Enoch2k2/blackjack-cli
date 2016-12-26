@@ -1,5 +1,5 @@
 class Player
-  attr_accessor :deck, :name, :deck_value, :status
+  attr_accessor :deck, :name, :deck_value, :status, :has_ace
 
   def initialize(name="Dealer")
     @deck = []
