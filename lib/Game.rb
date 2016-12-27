@@ -240,7 +240,7 @@ class Game
         get_card_values(current_player)
         if bust(current_player)
           puts current_player.name + " busts!"
-          @turn_count += 1          
+          @turn_count += 1
           sleep(1)
         end
       when "help"
@@ -296,7 +296,7 @@ class Game
     elsif draw?
       puts "The game ends in a draw!"
     else
-      lost
+      puts "each player bust, dealer wins!"
     end
     sleep(1)
     puts ""
